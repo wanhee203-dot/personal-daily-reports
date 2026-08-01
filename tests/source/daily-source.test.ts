@@ -39,6 +39,33 @@ describe("resolveDailySource", () => {
     });
   });
 
+  it("accepts February 29 in a leap year", () => {
+    const source = path.join(
+      root,
+      "daily",
+      "2028-02",
+      "2028-02-29.md"
+    );
+
+    expect(resolveDailySource(source, root)).toMatchObject({
+      startDay: 29,
+      outputStem: "29"
+    });
+  });
+
+  it("rejects February 29 outside a leap year", () => {
+    const source = path.join(
+      root,
+      "daily",
+      "2027-02",
+      "2027-02-29.md"
+    );
+
+    expect(() => resolveDailySource(source, root)).toThrow(
+      /Invalid daily source path/
+    );
+  });
+
   it.each([
     "reports/2026-08-01.md",
     "daily/2026-07/2026-08-01.md",

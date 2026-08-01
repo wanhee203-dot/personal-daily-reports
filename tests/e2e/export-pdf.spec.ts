@@ -47,6 +47,15 @@ test("exports one non-empty custom-size PDF and no PNG", async () => {
     expect(result.cssHeight).toBeGreaterThanOrEqual(1920);
     expect(bytes.length).toBeGreaterThan(0);
     expect(pdf.getPageCount()).toBe(1);
+    const page = pdf.getPage(0);
+    expect(page.getWidth()).toBeCloseTo(
+      result.cssWidth * 0.75,
+      1
+    );
+    expect(page.getHeight()).toBeCloseTo(
+      result.cssHeight * 0.75,
+      1
+    );
     expect(await readdir(output)).toEqual(["9-11.pdf"]);
   } finally {
     await server.close();
