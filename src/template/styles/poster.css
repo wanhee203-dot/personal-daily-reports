@@ -149,15 +149,40 @@ body {
 }
 
 .poster-content pre {
-  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px;
   overflow: visible;
-  color: #e8f0f7;
+  color: #183548;
   font-size: 16px;
   line-height: 1.65;
+  background: #edf6fb;
+  border: 1px solid #7db4d3;
+  border-radius: 12px;
+}
+
+.poster-content pre > code {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  color: inherit;
+  font-family: "Cascadia Mono", Consolas, "Microsoft YaHei", monospace;
+  text-align: left;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  background: #102b41;
-  border-radius: 8px;
+}
+
+.poster-code__label {
+  padding: 6px 12px;
+  color: #fff;
+  font-family: var(--font-report);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: var(--color-primary);
+  border-radius: 999px;
 }
 
 .poster-content :not(pre) > code {

@@ -30,7 +30,7 @@
 - Consumes: `MarkdownBlock` 的现有 `type: "code"`、`language?: string` 和 `code: string`。
 - Produces: `.poster-code` 普通代码块；`.poster-code--workflow` 流程变体；仅流程变体包含 `.poster-code__label` 和文本 `CORE WORKFLOW`。
 
-- [ ] **Step 1: 写入失败的组件测试**
+- [x] **Step 1: 写入失败的组件测试**
 
 在组件测试的 `poster.blocks` 中追加一个 `language: "TEXT"` 的树形流程块：
 
@@ -61,13 +61,13 @@ expect(workflowCode.closest("pre")).toHaveClass(
 expect(screen.getAllByText("CORE WORKFLOW")).toHaveLength(1);
 ```
 
-- [ ] **Step 2: 运行测试并确认按预期失败**
+- [x] **Step 2: 运行测试并确认按预期失败**
 
 Run: `npm.cmd run test -- tests/components/MarkdownPosterPage.test.tsx`
 
 Expected: FAIL，因为现有 `<pre>` 没有变体类，也没有 `CORE WORKFLOW` 标签。
 
-- [ ] **Step 3: 实现最小组件变体**
+- [x] **Step 3: 实现最小组件变体**
 
 将 `MarkdownContent` 的代码块分支改为：
 
@@ -89,13 +89,13 @@ if (block.type === "code") {
 }
 ```
 
-- [ ] **Step 4: 运行组件测试并确认通过**
+- [x] **Step 4: 运行组件测试并确认通过**
 
 Run: `npm.cmd run test -- tests/components/MarkdownPosterPage.test.tsx`
 
 Expected: PASS，普通代码无标签，大小写形式 `TEXT` 被识别为流程变体。
 
-- [ ] **Step 5: 提交组件变体**
+- [x] **Step 5: 提交组件变体**
 
 ```powershell
 git add src/template/components/MarkdownContent.tsx tests/components/MarkdownPosterPage.test.tsx
@@ -113,7 +113,7 @@ git commit -m "feat: distinguish workflow code blocks"
 - Consumes: Task 1 输出的 `.poster-code`、`.poster-code--workflow`、`.poster-code__label` 和直接子元素 `<code>`。
 - Produces: 所有围栏代码块的浅蓝蓝图视觉、Cascadia Mono 16px、居中的代码组、左对齐的代码文本以及可见的流程标签。
 
-- [ ] **Step 1: 扩展端到端夹具并写入失败的计算样式断言**
+- [x] **Step 1: 扩展端到端夹具并写入失败的计算样式断言**
 
 在视觉基线使用的 `poster.blocks` 末尾追加：
 
@@ -158,7 +158,7 @@ Run: `npm.cmd run test:e2e -- tests/e2e/visual-report.spec.ts -g "fenced code bl
 
 Expected: FAIL，因为现有代码块使用深色背景、默认字体，且代码子元素没有按新的组居中规则布局。
 
-- [ ] **Step 2: 实现蓝图卡片样式**
+- [x] **Step 2: 实现蓝图卡片样式**
 
 用以下规则替换现有 `.poster-content pre` 样式，并新增子元素规则：
 
@@ -201,25 +201,25 @@ Expected: FAIL，因为现有代码块使用深色背景、默认字体，且代
 }
 ```
 
-- [ ] **Step 3: 运行计算样式测试并确认通过**
+- [x] **Step 3: 运行计算样式测试并确认通过**
 
 Run: `npm.cmd run test:e2e -- tests/e2e/visual-report.spec.ts -g "fenced code blocks"`
 
 Expected: PASS；代码组中心与卡片中心偏差小于 2px，代码文本保持左对齐并使用 Cascadia Mono。
 
-- [ ] **Step 4: 更新视觉基线并检查树形缩进**
+- [x] **Step 4: 更新视觉基线并检查树形缩进**
 
 Run: `npm.cmd run test:e2e -- tests/e2e/visual-report.spec.ts --update-snapshots`
 
 Expected: PASS，并更新 `daily-report-standard-win32.png`。人工检查普通代码无标签、流程代码有一个标签、浅蓝卡片完整、树形竖线和层级未被逐行居中破坏、无裁切。
 
-- [ ] **Step 5: 运行完整验证**
+- [x] **Step 5: 运行完整验证**
 
 Run: `npm.cmd run test:all`
 
 Expected: 组件测试、全部端到端测试和 TypeScript/Vite 构建均通过。
 
-- [ ] **Step 6: 提交视觉实现**
+- [x] **Step 6: 提交视觉实现**
 
 ```powershell
 git add src/template/styles/poster.css tests/e2e/visual-report.spec.ts tests/e2e/visual-report.spec.ts-snapshots/daily-report-standard-win32.png

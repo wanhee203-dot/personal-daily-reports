@@ -17,7 +17,22 @@ test("matches the approved long-poster baseline", async ({ page }) => {
   const poster: PosterDocument = {
     ...markdown,
     dateLabel: "2026-07-30—31",
-    sourceName: "2026-07-30-31.md"
+    sourceName: "2026-07-30-31.md",
+    blocks: [
+      ...markdown.blocks,
+      {
+        type: "code",
+        language: "text",
+        code: [
+          "Mac: VS Code / Codex",
+          "        |",
+          "        v",
+          "Research Literature MCP",
+          "   |- Literature discovery",
+          "   `- Research analysis"
+        ].join("\n")
+      }
+    ]
   };
   const server = await startRenderServer(poster);
 
@@ -39,7 +54,9 @@ test("matches the approved long-poster baseline", async ({ page }) => {
   }
 });
 
-test("renders fenced code blocks at the body-text size", async ({ page }) => {
+test("renders fenced code blocks with blueprint typography and alignment", async ({
+  page
+}) => {
   const fixturePath = path.resolve(
     "tests",
     "fixtures",
@@ -60,10 +77,24 @@ test("renders fenced code blocks at the body-text size", async ({ page }) => {
     await page.waitForFunction(
       () => document.body.dataset.renderStatus === "ready"
     );
-    await expect(page.locator("#daily-report pre")).toHaveCSS(
-      "font-size",
-      "16px"
+    const code = page.locator("#daily-report pre code").first();
+    await expect(code).toHaveCSS("font-size", "16px");
+    await expect(code).toHaveCSS("text-align", "left");
+
+    const fontFamily = await code.evaluate(
+      (element) => getComputedStyle(element).fontFamily
     );
+    expect(fontFamily).toContain("Cascadia Mono");
+
+    const alignment = await code.evaluate((element) => {
+      const codeBox = element.getBoundingClientRect();
+      const preBox = element.parentElement!.getBoundingClientRect();
+      return Math.abs(
+        codeBox.left + codeBox.width / 2 -
+          (preBox.left + preBox.width / 2)
+      );
+    });
+    expect(alignment).toBeLessThan(2);
   } finally {
     await server.close();
   }
