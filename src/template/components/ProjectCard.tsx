@@ -12,12 +12,14 @@ export function ProjectCard({
       <div className="project-card__header">
         <div className="project-card__identity">
           <span className="project-code">{project.code}</span>
-          <h2>{project.title}</h2>
+          <h2 data-check-clipping="true">{project.title}</h2>
         </div>
         <StatusBadge status={project.status} />
       </div>
 
-      <p className="project-summary">{project.summary}</p>
+      <p className="project-summary" data-check-clipping="true">
+        {project.summary}
+      </p>
 
       <div className="project-sections">
         <ContentSection title="今日进展" items={project.progress} />

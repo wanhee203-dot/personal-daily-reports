@@ -21,8 +21,8 @@ export function ReportHeader({
         <span>OWNER / {meta.owner}</span>
         <time dateTime={meta.date}>{formatDate(meta.date)}</time>
       </div>
-      <h1>{meta.title}</h1>
-      <p>
+      <h1 data-check-clipping="true">{meta.title}</h1>
+      <p data-check-clipping="true">
         {meta.subtitle ??
           "RESEARCH & ENGINEERING OPERATIONS LOG"}
       </p>

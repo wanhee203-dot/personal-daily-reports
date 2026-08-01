@@ -9,7 +9,9 @@ export function GlobalNextActions({
       <h2>下一步计划</h2>
       <ul>
         {actions.map((action, index) => (
-          <li key={`global-${index}`}>{action}</li>
+          <li data-check-clipping="true" key={`global-${index}`}>
+            {action}
+          </li>
         ))}
       </ul>
     </section>

@@ -17,7 +17,9 @@ export function ContentSection({
       <h3>{title}</h3>
       <ul>
         {visibleItems.map((item, index) => (
-          <li key={`${title}-${index}`}>{item}</li>
+          <li data-check-clipping="true" key={`${title}-${index}`}>
+            {item}
+          </li>
         ))}
       </ul>
     </section>
