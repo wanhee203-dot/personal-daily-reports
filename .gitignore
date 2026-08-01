@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.daily-report-cache/
+tests/visual/current/
+tests/visual/diffs/
+playwright-report/
+test-results/
+*.log
