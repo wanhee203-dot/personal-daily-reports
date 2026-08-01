@@ -1,0 +1,31 @@
+:root {
+  --report-width: 1080px;
+  --report-min-height: 1920px;
+  --report-padding-x: 72px;
+  --report-padding-y: 72px;
+  --report-gap: 28px;
+
+  --color-page-bg: #f2f3f5;
+  --color-card-bg: #ffffff;
+  --color-primary: #16588f;
+  --color-primary-dark: #0f4776;
+  --color-accent: #f4a11a;
+  --color-text-main: #16324a;
+  --color-text-secondary: #667788;
+  --color-border: #dce4eb;
+
+  --color-completed-bg: #e6f4ea;
+  --color-completed-text: #297a43;
+  --color-progress-bg: #fff2d8;
+  --color-progress-text: #a86800;
+  --color-planned-bg: #e7f0f8;
+  --color-planned-text: #35698f;
+  --color-blocked-bg: #fce8e6;
+  --color-blocked-text: #a33a30;
+
+  --font-report: "Microsoft YaHei", "Segoe UI", sans-serif;
+  --radius-card: 10px;
+  --radius-major: 16px;
+  --radius-badge: 999px;
+  --shadow-card: 0 2px 8px rgb(25 49 70 / 6%);
+}
