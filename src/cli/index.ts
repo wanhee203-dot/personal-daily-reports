@@ -12,9 +12,7 @@ async function main(): Promise<void> {
   const result = await generateReport({
     sourcePath,
     projectRoot: process.cwd(),
-    scale: options.scale,
     dryRun: options.dryRun,
-    force: options.force,
     verbose: options.verbose
   });
 

@@ -23,8 +23,6 @@ export interface GenerateReportOptions {
   projectRoot: string;
   dryRun: boolean;
   verbose: boolean;
-  scale?: 1 | 2;
-  force?: boolean;
 }
 
 async function requireMarkdownFile(filePath: string): Promise<void> {
