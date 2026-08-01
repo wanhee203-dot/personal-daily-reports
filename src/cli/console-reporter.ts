@@ -9,23 +9,16 @@ export function printResult(result: GenerateReportResult): void {
   if (result.status === "dry-run") {
     console.log("Parse");
     console.log("  ✓ Markdown parsed");
-    console.log(`  ✓ ${result.report.projects.length} projects`);
-    console.log("  ✓ Schema validation");
-  } else if (result.status === "cached") {
-    console.log("Cache");
-    console.log("  ✓ Output is current");
-    console.log(`  ${result.outputDir}`);
+    console.log(`  PDF: ${result.outputPath}`);
   } else {
     console.log("Export");
-    console.log("  ✓ report.png");
-    console.log("  ✓ report.pdf");
-    console.log("  ✓ report.json");
-    console.log("  ✓ manifest.json");
+    console.log(`  ✓ ${path.basename(result.outputPath)}`);
     console.log("");
     console.log("Output");
-    console.log(`  ${result.outputDir}`);
+    console.log(`  ${result.outputPath}`);
     console.log(
-      `  ${result.manifest.render.pngWidth} × ${result.manifest.render.pngHeight}px`
+      `  ${result.measurement.cssWidth} × ` +
+        `${result.measurement.cssHeight}px`
     );
   }
 

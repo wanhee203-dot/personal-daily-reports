@@ -1,74 +1,71 @@
 import {
+  access,
   cp,
   mkdtemp,
   mkdir,
-  readFile
+  readFile,
+  readdir
 } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
 import { PDFDocument } from "pdf-lib";
-import { PNG } from "pngjs";
 import { generateReport } from "../../src/core/generate-report";
 
-test("generates complete artifacts and then uses cache", async () => {
-  const projectRoot = await mkdtemp(path.join(os.tmpdir(), "pdr-e2e-"));
+test("generates only daily month images numeric range PDF", async () => {
+  const projectRoot = await mkdtemp(
+    path.join(os.tmpdir(), "pdr-e2e-")
+  );
   const sourceDir = path.join(
     projectRoot,
-    "reports",
-    "source",
-    "2026",
-    "08"
+    "daily",
+    "2026-07"
   );
   await mkdir(sourceDir, { recursive: true });
-  const sourcePath = path.join(sourceDir, "2026-08-01.md");
+  const sourcePath = path.join(
+    sourceDir,
+    "2026-07-30-31.md"
+  );
   await cp(
-    path.resolve("tests/fixtures/visual-reference.md"),
+    path.resolve("tests/fixtures/plain-daily.md"),
     sourcePath
   );
+  const referenceDir = path.join(
+    projectRoot,
+    "template-reference"
+  );
+  await mkdir(referenceDir, { recursive: true });
+  await cp(
+    path.resolve("template-reference/figma-reference.png"),
+    path.join(referenceDir, "figma-reference.png")
+  );
 
-  const first = await generateReport({
+  const result = await generateReport({
     sourcePath,
     projectRoot,
-    scale: 1,
     dryRun: false,
-    force: false,
     verbose: false
   });
 
-  expect(first.status).toBe("generated");
-  if (first.status !== "generated") throw new Error("expected generated");
-
-  const pngBytes = await readFile(
-    path.join(first.outputDir, "report.png")
+  expect(result.status).toBe("generated");
+  if (result.status !== "generated") {
+    throw new Error("expected generated");
+  }
+  expect(result.outputPath).toBe(
+    path.join(sourceDir, "images", "30-31.pdf")
   );
-  const png = PNG.sync.read(pngBytes);
-  expect(png.width).toBe(1080);
-  expect(png.height).toBe(first.manifest.render.cssHeight);
+  expect(await readdir(path.join(sourceDir, "images"))).toEqual([
+    "30-31.pdf"
+  ]);
 
-  const pdfBytes = await readFile(
-    path.join(first.outputDir, "report.pdf")
+  const pdf = await PDFDocument.load(
+    await readFile(result.outputPath)
   );
-  const pdf = await PDFDocument.load(pdfBytes);
   expect(pdf.getPageCount()).toBe(1);
-
-  const manifest = JSON.parse(
-    await readFile(
-      path.join(first.outputDir, "manifest.json"),
-      "utf8"
-    )
-  );
-  expect(manifest.reportDate).toBe("2026-08-01");
-  expect(manifest.outputs.png).toBe("report.png");
-
-  const second = await generateReport({
-    sourcePath,
-    projectRoot,
-    scale: 1,
-    dryRun: false,
-    force: false,
-    verbose: false
-  });
-
-  expect(second.status).toBe("cached");
+  await expect(
+    access(path.join(projectRoot, "reports", "rendered"))
+  ).rejects.toThrow();
+  await expect(
+    access(path.join(projectRoot, ".daily-report-cache"))
+  ).rejects.toThrow();
 });

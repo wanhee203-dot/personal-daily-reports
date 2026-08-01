@@ -1,20 +1,17 @@
-import type { DailyReport } from "../schema/report-types";
-import type { ReportManifest } from "../storage/manifest";
+import type { PdfMeasurement } from "../exporter/export-pdf";
+import type { PosterDocument } from "../markdown/document-types";
 
 export type GenerateReportResult =
   | {
       status: "dry-run";
-      report: DailyReport;
-      warnings: string[];
-    }
-  | {
-      status: "cached";
-      outputDir: string;
+      document: PosterDocument;
+      outputPath: string;
       warnings: string[];
     }
   | {
       status: "generated";
+      outputPath: string;
       outputDir: string;
-      manifest: ReportManifest;
+      measurement: PdfMeasurement;
       warnings: string[];
     };
