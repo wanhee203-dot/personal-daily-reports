@@ -1,25 +1,58 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { parseCliArguments } from "../../src/cli/arguments";
 
 describe("parseCliArguments", () => {
-  it("uses scale 1 by default", () => {
-    const options = parseCliArguments(["node", "cli", "report.md"]);
-    expect(options).toMatchObject({
-      markdownFile: "report.md",
-      scale: 1,
+  it("defaults to PDF-only options", () => {
+    expect(
+      parseCliArguments([
+        "node",
+        "cli",
+        "daily/2026-08/2026-08-01.md"
+      ])
+    ).toEqual({
+      markdownFile: "daily/2026-08/2026-08-01.md",
+      open: false,
       dryRun: false,
-      force: false
+      verbose: false
     });
   });
 
-  it("accepts scale 2", () => {
-    const options = parseCliArguments([
-      "node",
-      "cli",
-      "report.md",
-      "--scale",
-      "2"
-    ]);
-    expect(options.scale).toBe(2);
+  it.each(["--scale", "--force"])(
+    "rejects removed option %s",
+    (option) => {
+      const stderr = vi
+        .spyOn(process.stderr, "write")
+        .mockImplementation(() => true);
+
+      try {
+        expect(() =>
+          parseCliArguments([
+            "node",
+            "cli",
+            "report.md",
+            option
+          ])
+        ).toThrow();
+      } finally {
+        stderr.mockRestore();
+      }
+    }
+  );
+
+  it("keeps open, dry-run, and verbose controls", () => {
+    expect(
+      parseCliArguments([
+        "node",
+        "cli",
+        "report.md",
+        "--open",
+        "--dry-run",
+        "--verbose"
+      ])
+    ).toMatchObject({
+      open: true,
+      dryRun: true,
+      verbose: true
+    });
   });
 });

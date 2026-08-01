@@ -1,21 +1,25 @@
 import path from "node:path";
 import { expect, test } from "@playwright/test";
-import { parseReportMarkdown } from "../../src/parser/parse-report";
-import { readFile } from "node:fs/promises";
+import type { PosterDocument } from "../../src/markdown/document-types";
+import { parseMarkdownFile } from "../../src/markdown/parse-markdown";
 import { startRenderServer } from "../../src/server/start-render-server";
 
-test("matches the approved daily report baseline", async ({ page }) => {
+test("matches the approved long-poster baseline", async ({ page }) => {
   const fixturePath = path.resolve(
     "tests",
     "fixtures",
-    "visual-reference.md"
+    "plain-daily.md"
   );
-  const source = await readFile(fixturePath, "utf8");
-  const report = parseReportMarkdown(
-    source,
-    "2026-08-01.md"
+  const markdown = await parseMarkdownFile(
+    fixturePath,
+    path.resolve(".")
   );
-  const server = await startRenderServer(report);
+  const poster: PosterDocument = {
+    ...markdown,
+    dateLabel: "2026-07-30—31",
+    sourceName: "2026-07-30-31.md"
+  };
+  const server = await startRenderServer(poster);
 
   try {
     await page.goto(server.url);

@@ -1,25 +1,38 @@
 import path from "node:path";
-import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
-import type { DailyReport, ReportProject } from "../../src/schema/report-types";
-import { parseReportMarkdown } from "../../src/parser/parse-report";
+import type {
+  MarkdownBlock,
+  PosterDocument
+} from "../../src/markdown/document-types";
+import { exportPdf } from "../../src/exporter/export-pdf";
 import { startRenderServer } from "../../src/server/start-render-server";
-import { exportArtifacts } from "../../src/exporter/export-artifacts";
 
-test("warns for a long report below the hard maximum", async () => {
-  const fixturePath = path.resolve("tests/fixtures/valid-long.md");
-  const report = parseReportMarkdown(
-    await readFile(fixturePath, "utf8"),
-    "2026-08-01.md"
+const longText = "超长内容用于验证海报高度边界。".repeat(28);
+
+function makePoster(paragraphCount: number): PosterDocument {
+  const blocks: MarkdownBlock[] = Array.from(
+    { length: paragraphCount },
+    () => ({
+      type: "paragraph",
+      text: longText
+    })
   );
-  const server = await startRenderServer(report);
+
+  return {
+    title: "超长日报高度验证",
+    dateLabel: "2026-08-01",
+    sourceName: "2026-08-01.md",
+    blocks
+  };
+}
+
+test("warns for a long poster below the hard maximum", async () => {
+  const server = await startRenderServer(makePoster(35));
 
   try {
-    const result = await exportArtifacts({
+    const result = await exportPdf({
       url: server.url,
-      pngPath: path.resolve("test-results/long-report.png"),
-      pdfPath: path.resolve("test-results/long-report.pdf"),
-      scale: 1
+      pdfPath: path.resolve("test-results/long-report.pdf")
     });
 
     expect(result.cssHeight).toBeGreaterThan(10_000);
@@ -30,39 +43,16 @@ test("warns for a long report below the hard maximum", async () => {
   }
 });
 
-test("rejects a report above the hard maximum", async () => {
-  const longItem = "超长内容".repeat(30);
-  const makeItems = () => Array.from({ length: 8 }, () => longItem);
-  const projects: ReportProject[] = Array.from(
-    { length: 8 },
-    (_, index) => ({
-      code: `PRJ-HARD-${index + 1}`,
-      title: `高度硬限制验证项目 ${index + 1}`,
-      status: "blocked",
-      summary: longItem,
-      progress: makeItems(),
-      issues: makeItems(),
-      next: makeItems()
-    })
-  );
-  const report: DailyReport = {
-    meta: {
-      title: "超长日报硬限制验证",
-      date: "2026-08-01",
-      owner: "Wenzel"
-    },
-    projects,
-    globalNextActions: [longItem]
-  };
-  const server = await startRenderServer(report);
+test("rejects a poster above the hard maximum", async () => {
+  const server = await startRenderServer(makePoster(70));
 
   try {
     await expect(
-      exportArtifacts({
+      exportPdf({
         url: server.url,
-        pngPath: path.resolve("test-results/hard-limit-report.png"),
-        pdfPath: path.resolve("test-results/hard-limit-report.pdf"),
-        scale: 1
+        pdfPath: path.resolve(
+          "test-results/hard-limit-report.pdf"
+        )
       })
     ).rejects.toThrow(/exceeds 16000px/);
   } finally {

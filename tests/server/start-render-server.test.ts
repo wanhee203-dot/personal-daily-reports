@@ -1,36 +1,28 @@
 import { describe, expect, it } from "vitest";
-import type { DailyReport } from "../../src/schema/report-types";
+import type { PosterDocument } from "../../src/markdown/document-types";
 import { startRenderServer } from "../../src/server/start-render-server";
 
-const report: DailyReport = {
-  meta: {
-    title: "个人日报",
-    date: "2026-08-01",
-    owner: "Wenzel"
-  },
-  projects: [
+const document: PosterDocument = {
+  title: "个人日报",
+  dateLabel: "2026-08-01",
+  sourceName: "2026-08-01.md",
+  blocks: [
     {
-      code: "PRJ-001",
-      title: "项目",
-      status: "planned",
-      summary: "摘要。",
-      progress: ["进展。"],
-      issues: [],
-      next: ["下一步。"]
+      type: "paragraph",
+      text: "继续完成 PDF 长海报。"
     }
-  ],
-  globalNextActions: ["继续。"]
+  ]
 };
 
 describe("startRenderServer", () => {
-  it("serves report JSON from loopback", async () => {
-    const server = await startRenderServer(report);
+  it("serves poster JSON from loopback", async () => {
+    const server = await startRenderServer(document);
 
     try {
       expect(server.url).toMatch(/^http:\/\/127\.0\.0\.1:/);
       const response = await fetch(`${server.url}/__report-data.json`);
       expect(response.ok).toBe(true);
-      expect(await response.json()).toEqual(report);
+      expect(await response.json()).toEqual(document);
     } finally {
       await server.close();
     }

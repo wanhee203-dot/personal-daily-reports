@@ -1,34 +1,27 @@
 import {
   access,
   mkdir,
+  rmdir,
   rm,
-  stat,
-  writeFile
+  stat
 } from "node:fs/promises";
 import path from "node:path";
-import { exportArtifacts } from "../exporter/export-artifacts";
-import { parseReportFile } from "../parser/parse-report";
-import { startRenderServer } from "../server/start-render-server";
+import { exportPdf } from "../exporter/export-pdf";
+import type { PosterDocument } from "../markdown/document-types";
+import { parseMarkdownFile } from "../markdown/parse-markdown";
 import {
-  isOutputCurrent,
-  sha256File
-} from "../storage/cache";
-import { createManifest } from "../storage/manifest";
+  startRenderServer,
+  type RenderServer
+} from "../server/start-render-server";
+import { resolveDailySource } from "../source/daily-source";
 import { resolveReportPaths } from "../storage/paths";
-import { publishRunDirectory } from "../storage/publish";
-import {
-  GENERATOR_VERSION,
-  TEMPLATE_NAME,
-  TEMPLATE_VERSION
-} from "./constants";
+import { publishPdf } from "../storage/publish-pdf";
 import type { GenerateReportResult } from "./result";
 
 export interface GenerateReportOptions {
   sourcePath: string;
   projectRoot: string;
-  scale: 1 | 2;
   dryRun: boolean;
-  force: boolean;
   verbose: boolean;
 }
 
@@ -45,116 +38,80 @@ async function requireMarkdownFile(filePath: string): Promise<void> {
   }
 }
 
+async function removeEmptyCacheRoot(
+  cacheRoot: string
+): Promise<void> {
+  try {
+    await rmdir(cacheRoot);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code !== "ENOTEMPTY" && code !== "ENOENT") {
+      throw error;
+    }
+  }
+}
+
 export async function generateReport(
   options: GenerateReportOptions
 ): Promise<GenerateReportResult> {
   const sourcePath = path.resolve(options.sourcePath);
   await requireMarkdownFile(sourcePath);
 
-  const report = await parseReportFile(sourcePath);
-  const warnings: string[] = [];
-
-  if (report.projects.length > 8) {
-    warnings.push(
-      `Project count ${report.projects.length} exceeds the recommended limit 8`
-    );
-  }
-
-  if (options.dryRun) {
-    return {
-      status: "dry-run",
-      report,
-      warnings
-    };
-  }
-
-  const sourceHash = await sha256File(sourcePath);
+  const identity = resolveDailySource(
+    sourcePath,
+    options.projectRoot
+  );
+  const markdown = await parseMarkdownFile(
+    sourcePath,
+    options.projectRoot
+  );
+  const poster: PosterDocument = {
+    ...markdown,
+    dateLabel: identity.dateLabel,
+    sourceName: path.basename(sourcePath)
+  };
   const runId = `run-${Date.now()}-${process.pid}`;
   const paths = resolveReportPaths(
     sourcePath,
-    report.meta.date,
     options.projectRoot,
     runId
   );
 
-  const fingerprint = {
-    sourceHash,
-    templateVersion: TEMPLATE_VERSION,
-    generatorVersion: GENERATOR_VERSION,
-    scale: options.scale
-  };
-
-  if (
-    !options.force &&
-    (await isOutputCurrent(paths.finalOutputDir, fingerprint))
-  ) {
+  if (options.dryRun) {
     return {
-      status: "cached",
-      outputDir: paths.finalOutputDir,
-      warnings
+      status: "dry-run",
+      document: poster,
+      outputPath: paths.finalPdfPath,
+      warnings: []
     };
   }
 
-  await mkdir(paths.tempOutputDir, { recursive: true });
-
-  const server = await startRenderServer(report);
+  await mkdir(paths.runRoot, { recursive: true });
+  let server: RenderServer | undefined;
 
   try {
-    const measurement = await exportArtifacts({
+    server = await startRenderServer(poster);
+    const measurement = await exportPdf({
       url: server.url,
-      pngPath: paths.tempPngPath,
-      pdfPath: paths.tempPdfPath,
-      scale: options.scale
+      pdfPath: paths.tempPdfPath
     });
-
-    if (measurement.warning) {
-      warnings.push(measurement.warning);
-    }
-
-    await writeFile(
-      paths.tempJsonPath,
-      `${JSON.stringify(report, null, 2)}\n`,
-      "utf8"
-    );
-
-    const manifest = createManifest({
-      source: path.relative(options.projectRoot, sourcePath),
-      sourceHash,
-      reportDate: report.meta.date,
-      template: {
-        name: TEMPLATE_NAME,
-        version: TEMPLATE_VERSION
-      },
-      generatorVersion: GENERATOR_VERSION,
-      generatedAt: new Date().toISOString(),
-      render: {
-        cssWidth: measurement.cssWidth,
-        cssHeight: measurement.cssHeight,
-        scale: options.scale,
-        pngWidth: measurement.pngWidth,
-        pngHeight: measurement.pngHeight
-      }
-    });
-
-    await writeFile(
-      paths.tempManifestPath,
-      `${JSON.stringify(manifest, null, 2)}\n`,
-      "utf8"
-    );
-
-    await publishRunDirectory(
-      paths.tempOutputDir,
-      paths.finalOutputDir
-    );
+    await publishPdf(paths.tempPdfPath, paths.finalPdfPath);
 
     return {
       status: "generated",
+      outputPath: paths.finalPdfPath,
       outputDir: paths.finalOutputDir,
-      manifest,
-      warnings
+      measurement,
+      warnings: measurement.warning
+        ? [measurement.warning]
+        : []
     };
   } finally {
-    await server.close();
-    await rm(paths.runRoot, { recursive: true, force: true });
+    try {
+      await server?.close();
+    } finally {
+      await rm(paths.runRoot, { recursive: true, force: true });
+      await removeEmptyCacheRoot(paths.cacheRoot);
+    }
   }
 }
