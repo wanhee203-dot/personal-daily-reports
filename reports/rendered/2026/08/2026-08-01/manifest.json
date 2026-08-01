@@ -1,0 +1,23 @@
+{
+  "source": "reports\\source\\2026\\08\\2026-08-01.md",
+  "sourceHash": "sha256:b8b8eba93d27b7804753fdc25cf89261c97510231ff725874a6c74f235ea0f09",
+  "reportDate": "2026-08-01",
+  "template": {
+    "name": "personal-daily-report",
+    "version": "1.0.0"
+  },
+  "generatorVersion": "0.1.0",
+  "generatedAt": "2026-08-01T10:01:04.472Z",
+  "render": {
+    "cssWidth": 1080,
+    "cssHeight": 1920,
+    "scale": 1,
+    "pngWidth": 1080,
+    "pngHeight": 1920
+  },
+  "outputs": {
+    "png": "report.png",
+    "pdf": "report.pdf",
+    "json": "report.json"
+  }
+}
