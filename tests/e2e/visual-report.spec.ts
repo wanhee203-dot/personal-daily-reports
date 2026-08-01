@@ -38,3 +38,33 @@ test("matches the approved long-poster baseline", async ({ page }) => {
     await server.close();
   }
 });
+
+test("renders fenced code blocks at the body-text size", async ({ page }) => {
+  const fixturePath = path.resolve(
+    "tests",
+    "fixtures",
+    "plain-daily.md"
+  );
+  const markdown = await parseMarkdownFile(
+    fixturePath,
+    path.resolve(".")
+  );
+  const server = await startRenderServer({
+    ...markdown,
+    dateLabel: "2026-07-30-31",
+    sourceName: "2026-07-30-31.md"
+  });
+
+  try {
+    await page.goto(server.url);
+    await page.waitForFunction(
+      () => document.body.dataset.renderStatus === "ready"
+    );
+    await expect(page.locator("#daily-report pre")).toHaveCSS(
+      "font-size",
+      "16px"
+    );
+  } finally {
+    await server.close();
+  }
+});
