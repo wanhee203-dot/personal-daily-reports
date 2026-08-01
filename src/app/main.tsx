@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import type { DailyReport } from "../schema/report-types";
-import { DailyReportPage } from "../template/DailyReportPage";
+import type { PosterDocument } from "../markdown/document-types";
+import { MarkdownPosterPage } from "../template/MarkdownPosterPage";
 import { markRenderReady } from "./render-readiness";
 
 async function bootstrap(): Promise<void> {
@@ -15,7 +15,7 @@ async function bootstrap(): Promise<void> {
     throw new Error(`Report data request failed: ${response.status}`);
   }
 
-  const report = (await response.json()) as DailyReport;
+  const poster = (await response.json()) as PosterDocument;
   const root = document.getElementById("root");
 
   if (!root) {
@@ -24,7 +24,7 @@ async function bootstrap(): Promise<void> {
 
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
-      <DailyReportPage report={report} />
+      <MarkdownPosterPage document={poster} />
     </React.StrictMode>
   );
 

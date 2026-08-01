@@ -1,5 +1,6 @@
 import getPort from "get-port";
 import { createServer, type ViteDevServer } from "vite";
+import type { PosterDocument } from "../markdown/document-types";
 import type { DailyReport } from "../schema/report-types";
 
 export interface RenderServer {
@@ -7,11 +8,17 @@ export interface RenderServer {
   close(): Promise<void>;
 }
 
+export function startRenderServer(
+  document: PosterDocument
+): Promise<RenderServer>;
+export function startRenderServer(
+  document: DailyReport
+): Promise<RenderServer>;
 export async function startRenderServer(
-  report: DailyReport
+  document: PosterDocument | DailyReport
 ): Promise<RenderServer> {
   const port = await getPort();
-  const json = JSON.stringify(report);
+  const json = JSON.stringify(document);
 
   const vite: ViteDevServer = await createServer({
     server: {
