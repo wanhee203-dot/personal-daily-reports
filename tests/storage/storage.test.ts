@@ -7,18 +7,34 @@ import { resolveReportPaths } from "../../src/storage/paths";
 import { publishRunDirectory } from "../../src/storage/publish";
 
 describe("storage utilities", () => {
-  it("resolves the dated output directory", () => {
-    const root = "H:\\Workshop\\PDR\\personal-daily-reports";
+  it("resolves only a temporary and final PDF path", () => {
+    const root = path.resolve(
+      "H:/Workshop/PDR/personal-daily-reports"
+    );
+    const source = path.join(
+      root,
+      "daily",
+      "2026-07",
+      "2026-07-30-31.md"
+    );
     const paths = resolveReportPaths(
-      path.join(root, "reports", "source", "2026", "08", "2026-08-01.md"),
-      "2026-08-01",
+      source,
       root,
       "run-1"
     );
 
     expect(paths.finalOutputDir).toBe(
-      path.join(root, "reports", "rendered", "2026", "08", "2026-08-01")
+      path.join(root, "daily", "2026-07", "images")
     );
+    expect(paths.finalPdfPath).toBe(
+      path.join(root, "daily", "2026-07", "images", "30-31.pdf")
+    );
+    expect(paths.tempPdfPath).toBe(
+      path.join(root, ".daily-report-cache", "run-1", "30-31.pdf")
+    );
+    expect(Object.keys(paths)).not.toContain("tempPngPath");
+    expect(Object.keys(paths)).not.toContain("tempJsonPath");
+    expect(Object.keys(paths)).not.toContain("tempManifestPath");
   });
 
   it("hashes identical content identically", async () => {
