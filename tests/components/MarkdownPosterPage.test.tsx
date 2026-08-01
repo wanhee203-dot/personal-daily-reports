@@ -33,6 +33,15 @@ const poster: PosterDocument = {
       code: 'model_provider = "custom"'
     },
     {
+      type: "code",
+      language: "TEXT",
+      code:
+        "Mac: VS Code / Codex\n" +
+        "        |\n" +
+        "        v\n" +
+        "Research Literature MCP"
+    },
+    {
       type: "image",
       alt: "示意图",
       src: "data:image/png;base64,AA=="
@@ -52,9 +61,20 @@ describe("MarkdownPosterPage", () => {
       screen.getByRole("heading", { name: "研究工作日报" })
     ).toBeInTheDocument();
     expect(screen.getByText("2026-07-30—31")).toBeInTheDocument();
-    expect(
-      screen.getByText('model_provider = "custom"')
-    ).toBeInTheDocument();
+    const regularCode = screen.getByText('model_provider = "custom"');
+    const workflowCode = screen.getByText("Mac: VS Code / Codex", {
+      exact: false
+    });
+
+    expect(regularCode.closest("pre")).toHaveClass("poster-code");
+    expect(regularCode.closest("pre")).not.toHaveClass(
+      "poster-code--workflow"
+    );
+    expect(workflowCode.closest("pre")).toHaveClass(
+      "poster-code",
+      "poster-code--workflow"
+    );
+    expect(screen.getAllByText("CORE WORKFLOW")).toHaveLength(1);
     expect(screen.getByRole("img", { name: "示意图" }))
       .toHaveAttribute("src", "data:image/png;base64,AA==");
   });

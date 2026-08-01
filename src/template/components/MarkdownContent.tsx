@@ -60,8 +60,18 @@ export function MarkdownContent({
         }
 
         if (block.type === "code") {
+          const isWorkflow = block.language?.toLowerCase() === "text";
+          const className = isWorkflow
+            ? "poster-code poster-code--workflow"
+            : "poster-code";
+
           return (
-            <pre key={key}>
+            <pre key={key} className={className}>
+              {isWorkflow ? (
+                <span className="poster-code__label">
+                  CORE WORKFLOW
+                </span>
+              ) : null}
               <code data-language={block.language}>
                 {block.code}
               </code>
