@@ -18,6 +18,7 @@ playwright-report/
 # editor
 .vscode/
 .idea/
+.worktrees/
 
 # OS
 .DS_Store
