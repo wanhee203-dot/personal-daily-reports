@@ -23,3 +23,8 @@ playwright-report/
 # OS
 .DS_Store
 Thumbs.db
+
+# daily report cache and visual test artifacts
+.daily-report-cache/
+tests/visual/current/
+tests/visual/diffs/
